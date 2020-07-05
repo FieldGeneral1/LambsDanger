@@ -24,8 +24,8 @@
  * Public: No
 */
 
-if !(canSuspend) exitWith {
-    _this spawn FUNC(taskCreep);
+if (canSuspend) exitWith {
+    [FUNC(taskCreep), _this] call CBA_fnc_directCall;
 };
 
 // functions ---
@@ -98,11 +98,22 @@ _group enableAttack false;
     true
 } count units _group;
 
-// creep loop
-waitUntil {
+// loop
+[{
+    params ["_args","_handle"];
+    _args params ["_group","_radius","_cycle","_area","_pos","_onlyPlayers","_fnc_creepOrders"];
+    if !(local _group) exitWith {
+        // remove handle
+        _handle call CBA_fnc_removePerFrameHandler;
 
-    // performance
-    waitUntil {sleep 1; simulationEnabled leader _group};
+        // call on remote client
+        [_group,_radius,_cycle,_area,_pos,_onlyPlayers] remoteExecCall [QFUNC(taskCreep), leader _group];
+
+        // debug
+        if (EGVAR(danger,debug_functions)) then {format ["%1 taskCreep: %2 moved to remote client", side _group, groupID _group] call EFUNC(danger,debugLog);};
+    };
+
+    if !(simulationEnabled (leader _group)) exitWith {false};
 
     // find
     private _target = [_group, _radius, _area, _pos, _onlyPlayers] call FUNC(findClosestTarget);
@@ -111,14 +122,16 @@ waitUntil {
     if (!isNull _target) then {
         [_group, _target] call _fnc_creepOrders;
         if (EGVAR(danger,debug_functions)) exitWith {format ["%1 taskCreep: %2 targets %3 (%4) at %5 Meters -- Stealth %6/%7", side _group, groupID _group, name _target, _group knowsAbout _target, floor (leader _group distance2d _target), ((selectBestPlaces [getPos leader _group, 2, "(forest + trees)/2", 1, 1]) select 0) select 1, str(unitPos leader _group)] call EFUNC(danger,debugLog);};
-        sleep _cycle;
     } else {
         _group setCombatMode "GREEN";
-        sleep (_cycle * 4);
     };
+
     // end
-    ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1)
-};
+    if ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1) exitWith {
+        _handle call CBA_fnc_removePerFrameHandler;
+    };
+
+}, _cycle, [_group,_radius,_cycle,_area,_pos,_onlyPlayers,_fnc_creepOrders]] call CBA_fnc_addPerFrameHandler;
 
 // end
 true

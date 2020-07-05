@@ -25,8 +25,8 @@
  * Public: No
 */
 
-if !(canSuspend) exitWith {
-    _this spawn FUNC(taskCQB);
+if (canSuspend) exitWith {
+    [FUNC(taskCQB), _this] call CBA_fnc_directCall;
 };
 
 // functions ---
@@ -182,11 +182,27 @@ _group allowFleeing 0;
     true
 } count units _group;
 
-// loop
-waitUntil {
+// loop and cleanup
+[{
+    params ["_args","_handle"];
+    _args params ["_group","_pos","_radius","_cycle","_area","_useWaypoint","_fnc_act","_fnc_find","_fnc_enemy"];
+    if !(local _group) exitWith {
+        // remove handle
+        _handle call CBA_fnc_removePerFrameHandler;
 
-    // performance
-    waitUntil {sleep 1; simulationEnabled (leader _group)};
+        // call on remote client
+        [_group,_pos,_radius,_cycle,_area,_useWaypoint] remoteExecCall [QFUNC(taskCQB), leader _group];
+
+        // reset
+        {
+            _x setVariable [QEGVAR(danger,disableAI), nil];
+        } foreach units _group;
+
+        // debug
+        if (EGVAR(danger,debug_functions)) then {format ["%1 taskCQB: (team: %2) moved to remote client", side _group, groupID _group] call EFUNC(danger,debugLog);};
+    };
+
+    if !(simulationEnabled (leader _group)) exitWith {false};
 
     // get wp position
     private _wPos = _pos call CBA_fnc_getPos;
@@ -204,23 +220,22 @@ waitUntil {
     // debug
     if (EGVAR(danger,debug_functions)) then {format ["%1 taskCQB: (team: %2) (units: %3) (enemies: %4)", side _group, groupID _group, count units _group, !isNull _enemy] call EFUNC(danger,debugLog);}; // instead of boolean for enemies, would be better with a count -nkenny
 
-    // wait
-    sleep _cycle;
-
     // end
-    ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1)
+    if ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1) exitWith {
+        // reset
+        {
+            _x setVariable [QEGVAR(danger,disableAI), nil];
+            _x setUnitpos "AUTO";
+            _x doFollow (leader _x);
+        } foreach units _group;
 
-};
+        // remove handle
+        _handle call CBA_fnc_removePerFrameHandler;
 
-// reset
-{
-    _x setVariable [QEGVAR(danger,disableAI), nil];
-    _x setUnitpos "AUTO";
-    _x doFollow (leader _x);
-} foreach units _group;
-
-// debug
-if (EGVAR(danger,debug_functions)) then {format ["%1 taskCQB: CQB DONE version 0.3", side _group] call EFUNC(danger,debugLog);};
+        // debug
+        if (EGVAR(danger,debug_functions)) then {format ["%1 taskCQB: CQB DONE version 0.3", side _group] call EFUNC(danger,debugLog);};
+    };
+}, _cycle, [_group,_pos,_radius,_cycle,_area,_useWaypoint,_fnc_act,_fnc_find,_fnc_enemy]] call CBA_fnc_addPerFrameHandler;
 
 // end
 true

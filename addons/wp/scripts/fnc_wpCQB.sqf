@@ -27,5 +27,6 @@ if (_radius isEqualTo 0) then { _radius = 50; };
 // low level move order
 _group move _pos;
 
+waitUntil {sleep 1; ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1)};
 // end
 true

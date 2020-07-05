@@ -19,8 +19,8 @@
  *
  * Public: No
 */
-if !(canSuspend) exitWith {
-    _this spawn FUNC(taskRush);
+if (canSuspend) exitWith {
+    [FUNC(taskRush), _this] call CBA_fnc_directCall;
 };
 // functions ---
 
@@ -79,11 +79,20 @@ _group enableAttack false;
     true
 } count (units _group);
 
-// Hunting loop
-waitUntil {
+[{
+    params ["_args","_handle"];
+    _args params ["_group","_radius","_cycle","_area","_pos","_onlyPlayers","_fnc_rushOrders"];
+    if !(local _group) exitWith {
+        // remove handle
+        _handle call CBA_fnc_removePerFrameHandler;
 
-    // performance
-    waitUntil { sleep 1; simulationEnabled leader _group; };
+        // call on remote client
+        [_group,_radius,_cycle,_area,_pos,_onlyPlayers] remoteExecCall [QFUNC(taskRush), leader _group];
+
+        // debug
+        if (EGVAR(danger,debug_functions)) then {format ["%1 taskRush: %2 moved to remote client", side _group, groupID _group] call EFUNC(danger,debugLog);};
+    };
+    if !(simulationEnabled (leader _group)) exitWith {false};
 
     // find
     private _target = [_group, _radius, _area, _pos, _onlyPlayers] call FUNC(findClosestTarget);
@@ -92,15 +101,12 @@ waitUntil {
     if (!isNull _target) then  {
         [_group, _target] call _fnc_rushOrders;
         if (EGVAR(danger,debug_functions)) then { format ["%1 taskRush: %2 targets %3 at %4M", side _group, groupID _group, name _target, floor (leader _group distance2D _target)] call EFUNC(danger,debugLog); };
-        sleep (linearConversion [1000, 2000, (leader _group distance2D _target), _cycle, _cycle * 4, true]);
-    } else {
-        sleep (_cycle * 4);
     };
 
     // end
-    ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1)
-
-};
-
+    if ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1) exitWith {
+        _handle call CBA_fnc_removePerFrameHandler;
+    };
+}, _cycle, [_group,_radius,_cycle,_area,_pos,_onlyPlayers,_fnc_rushOrders]] call CBA_fnc_addPerFrameHandler;
 // end
 true

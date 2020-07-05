@@ -66,7 +66,7 @@ switch (_mode) do {
             private _range = _area select ((_area select 0) < (_area select 1));
             private _cycle = _logic getVariable [QGVAR(CycleTime), 70];
             private _movingCenter = _logic getVariable [QGVAR(MovingCenter), true];
-            private _playerOnly = _logic getVariable [QGVAR(PlayerOnly), true];
+            private _playerOnly = _logic getVariable [QGVAR(PlayersOnly), true];
             {
                 private _args = [[_x, _range, _cycle, _area, getPos _logic, _playerOnly], [_x, _range, _cycle, _area, nil, _playerOnly]] select _movingCenter;
                 _args remoteExec [QFUNC(taskHunt), leader _x];

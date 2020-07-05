@@ -33,5 +33,6 @@ _group move _pos;
 // execute script
 [_group, _pos, false, 15, 3, true] call FUNC(taskAssault);
 
+waitUntil {sleep 1; _group getVariable [QGVAR(taskAssaultMembers), []] isEqualTo []};
 // end
 true

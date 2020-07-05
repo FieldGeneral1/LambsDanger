@@ -21,8 +21,8 @@
  *
  * Public: No
 */
-if !(canSuspend) exitWith {
-    _this spawn FUNC(taskHunt);
+if (canSuspend) exitWith {
+    [FUNC(taskHunt), _this] call CBA_fnc_directCall;
 };
 // 1. FIND TRACKER
 params ["_group", ["_radius", 500], ["_cycle", 60 + random 30], ["_area", [], [[]]], ["_pos", [], [[]]], ["_onlyPlayers", true]];
@@ -46,10 +46,21 @@ private _fnc_flare = {
 };
 
 // 3. DO THE HUNT SCRIPT! ---------------------------------------------------
-waitUntil {
 
-    // performance
-    waitUntil { sleep 1; simulationEnabled (leader _group) };
+[{
+    params ["_args","_handle"];
+    _args params ["_group","_radius","_cycle","_area","_pos","_onlyPlayers","_fnc_flare"];
+    if !(local _group) exitWith {
+        // remove handle
+        _handle call CBA_fnc_removePerFrameHandler;
+
+        // call on remote client
+        [_group,_radius,_cycle,_area,_pos,_onlyPlayers] remoteExecCall [QFUNC(taskHunt), leader _group];
+
+        // debug
+        if (EGVAR(danger,debug_functions)) then {format ["%1 taskHunt: %2 moved to remote client", side _group, groupID _group] call EFUNC(danger,debugLog);};
+    };
+    if !(simulationEnabled (leader _group)) exitWith {false};
 
     // find
     private _target = [_group, _radius, _area, _pos, _onlyPlayers] call FUNC(findClosestTarget);
@@ -80,12 +91,10 @@ waitUntil {
             } count units _group;
         };
     };
-
-    // WAIT FOR IT! / end
-    sleep _cycle;
-    ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1)
-
-};
+    if ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1) exitWith {
+        _handle call CBA_fnc_removePerFrameHandler;
+    };
+}, _cycle, [_group,_radius,_cycle,_area,_pos,_onlyPlayers,_fnc_flare]] call CBA_fnc_addPerFrameHandler;
 
 // end
 true
