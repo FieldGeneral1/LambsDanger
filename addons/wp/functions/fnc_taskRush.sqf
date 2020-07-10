@@ -17,11 +17,22 @@
  * Example:
  * [bob, 500] spawn lambs_wp_fnc_taskRush;
  *
- * Public: No
+ * Public: Yes
 */
 if (canSuspend) exitWith {
     [FUNC(taskRush), _this] call CBA_fnc_directCall;
 };
+
+// init
+params [
+    ["_group", grpNull, [grpNull, objNull]],
+    ["_radius", TASK_RUSH_SIZE, [0]],
+    ["_cycle", TASK_RUSH_CYCLETIME, [0]],
+    ["_area", [], [[]]],
+    ["_pos", [], [[]]],
+    ["_onlyPlayers", TASK_RUSH_PLAYERSONLY, [false]]
+];
+
 // functions ---
 
 private _fnc_rushOrders = {
@@ -62,9 +73,6 @@ private _fnc_rushOrders = {
 };
 // functions end ---
 
-// init
-params ["_group", ["_radius", 500], ["_cycle", 15], ["_area", [], [[]]], ["_pos", [], [[]]], ["_onlyPlayers", true]];
-
 // sort grp
 if (!local _group) exitWith {false};
 if (_group isEqualType objNull) then { _group = group _group; };
@@ -100,11 +108,11 @@ _group enableAttack false;
     // act
     if (!isNull _target) then  {
         [_group, _target] call _fnc_rushOrders;
-        if (EGVAR(danger,debug_functions)) then { format ["%1 taskRush: %2 targets %3 at %4M", side _group, groupID _group, name _target, floor (leader _group distance2D _target)] call EFUNC(danger,debugLog); };
+        if (EGVAR(main,debug_functions)) then { format ["%1 taskRush: %2 targets %3 at %4M", side _group, groupID _group, name _target, floor (leader _group distance2D _target)] call EFUNC(main,debugLog); };
     };
 
     // end
-    if ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1) exitWith {
+    if ((units _group) findIf {_x call EFUNC(main,isAlive)} == -1) exitWith {
         _handle call CBA_fnc_removePerFrameHandler;
     };
 }, _cycle, [_group,_radius,_cycle,_area,_pos,_onlyPlayers,_fnc_rushOrders]] call CBA_fnc_addPerFrameHandler;

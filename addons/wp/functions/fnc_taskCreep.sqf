@@ -21,12 +21,22 @@
  * Example:
  * [bob, 500] spawn lambs_wp_fnc_taskCreep;
  *
- * Public: No
+ * Public: Yes
 */
 
 if (canSuspend) exitWith {
     [FUNC(taskCreep), _this] call CBA_fnc_directCall;
 };
+
+// init
+params [
+    ["_group", grpNull, [grpNull, objNull]],
+    ["_radius", TASK_CREEP_SIZE, [0]],
+    ["_cycle", 30, [0]],
+    ["_area", [], [[]]],
+    ["_pos", [], [[]]],
+    ["_onlyPlayers", true, [false]]
+];
 
 // functions ---
 
@@ -35,7 +45,7 @@ private _fnc_creepOrders = {
 
     // distance
     private _newDist = (leader _group) distance2d _target;
-    private _in_forest = ((selectBestPlaces [getPos (leader _group), 2, "(forest + trees)/2", 1, 1]) select 0) select 1;
+    private _in_forest = ((selectBestPlaces [getPos (leader _group), 2, "(forest + trees)*0.5", 1, 1]) select 0) select 1;
 
     // danger mode? go for it!
     if (behaviour (leader _group) isEqualTo "COMBAT") exitWith {
@@ -70,9 +80,6 @@ private _fnc_creepOrders = {
 
 
 // functions end ---
-
-// init
-params ["_group", ["_radius", 500], ["_cycle", 30], ["_area", [], [[]]], ["_pos", [], [[]]], ["_onlyPlayers", true]];
 
 // sort grp
 if (!local _group) exitWith {false};
@@ -121,13 +128,13 @@ _group enableAttack false;
     // act
     if (!isNull _target) then {
         [_group, _target] call _fnc_creepOrders;
-        if (EGVAR(danger,debug_functions)) exitWith {format ["%1 taskCreep: %2 targets %3 (%4) at %5 Meters -- Stealth %6/%7", side _group, groupID _group, name _target, _group knowsAbout _target, floor (leader _group distance2d _target), ((selectBestPlaces [getPos leader _group, 2, "(forest + trees)/2", 1, 1]) select 0) select 1, str(unitPos leader _group)] call EFUNC(danger,debugLog);};
+        if (EGVAR(main,debug_functions)) then {format ["%1 taskCreep: %2 targets %3 (%4) at %5 Meters -- Stealth %6/%7", side _group, groupID _group, name _target, _group knowsAbout _target, floor (leader _group distance2d _target), ((selectBestPlaces [getPos leader _group, 2, "(forest + trees)*0.5", 1, 1]) select 0) select 1, str(unitPos leader _group)] call EFUNC(main,debugLog);};
     } else {
         _group setCombatMode "GREEN";
     };
 
     // end
-    if ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1) exitWith {
+    if ((units _group) findIf {_x call EFUNC(main,isAlive)} == -1) exitWith {
         _handle call CBA_fnc_removePerFrameHandler;
     };
 

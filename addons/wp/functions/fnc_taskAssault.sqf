@@ -24,7 +24,14 @@ if (canSuspend) exitWith {
 };
 
 // init --
-params ["_group", "_pos", ["_retreat", false ], ["_threshold", 12], [ "_cycle", 3], ["_useWaypoint", false]];
+params [
+    ["_group", grpNull, [grpNull, objNull]],
+    ["_pos", [0, 0, 0]],
+    ["_retreat", TASK_ASSAULT_ISRETREAT, [false]],
+    ["_threshold", TASK_ASSAULT_DISTANCETHRESHOLD, [0]],
+    [ "_cycle", TASK_ASSAULT_CYCLETIME, [0]],
+    ["_useWaypoint", false, [false]]
+];
 
 // sort grp
 if (!local _group) exitWith {false};
@@ -47,7 +54,7 @@ if (EGVAR(danger,debug_functions)) then {
 };
 
 // sort group
-private _units = units _group select {!isPlayer _x && {_x call EFUNC(danger,isAlive)} && {isNull objectParent _x}};
+private _units = units _group select {!isPlayer _x && {_x call EFUNC(main,isAlive)} && {isNull objectParent _x}};
 
 // add group variables
 _group setVariable [QGVAR(taskAssaultDestination), _pos];
@@ -91,7 +98,7 @@ _group setSpeedMode "FULL";
                 };
 
                 // exit
-                if (!(_unit call EFUNC(danger,isAlive)) || {_unit distance2D _destination < _threshold} || {_destination isEqualTo [0,0,0]}) exitWith {
+                if (!(_unit call EFUNC(main,isAlive)) || {_unit distance2D _destination < _threshold} || {_destination isEqualTo [0,0,0]}) exitWith {
 
                     // group
                     private _groupMembers = _group getVariable [QGVAR(taskAssaultMembers), []];
@@ -160,12 +167,12 @@ if !(_group getVariable [QGVAR(taskAssault),false]) then {
         if !(local _group) exitWith {
             _handle call CBA_fnc_removePerFrameHandler;
             [_group,_pos,_retreat,_threshold,_cycle,_useWaypoint] remoteExecCall [QFUNC(taskAssault), leader _group];
-            if (EGVAR(danger,debug_functions)) then {
+            if (EGVAR(main,debug_functions)) then {
                 format ["%1 %2 %3 Moved to remote client",
                     side _group,
                     ["taskAssault", "taskRetreat"] select _retreat,
                     _group
-                ] call EFUNC(danger,debugLog);
+                ] call EFUNC(main,debugLog);
             };
             _group setVariable [QGVAR(taskAssaultDestination), nil];
             _group setVariable [QGVAR(taskAssaultMembers), nil];
@@ -180,12 +187,12 @@ if !(_group getVariable [QGVAR(taskAssault),false]) then {
             // remove event handler
             _handle call CBA_fnc_removePerFrameHandler;
             // debug
-            if (EGVAR(danger,debug_functions)) then {
+            if (EGVAR(main,debug_functions)) then {
                 format ["%1 %2 %3 Completed",
                     side _group,
                     ["taskAssault", "taskRetreat"] select _retreat,
                     _group
-                ] call EFUNC(danger,debugLog);
+                ] call EFUNC(main,debugLog);
             };
             // clean up
             _group setVariable [QGVAR(taskAssaultDestination), nil];
@@ -195,13 +202,13 @@ if !(_group getVariable [QGVAR(taskAssault),false]) then {
         };
 
         // debug
-        if (EGVAR(danger,debug_functions)) then {
+        if (EGVAR(main,debug_functions)) then {
             format ["%1 %2: %3 units moving %4M",
                 side _group,
                 ["taskAssault", "taskRetreat"] select _retreat,
                 count (_group getVariable [QGVAR(taskAssaultMembers), []]),
                 round ( [ (_units select 0), leader _group] select ( _units isEqualTo [] ) distance2D _wPos )
-            ] call EFUNC(danger,debugLog);
+            ] call EFUNC(main,debugLog);
         };
 
     }, _cycle, [_group,_pos,_cycle,_retreat,_units,_threshold,_useWaypoint]] call CBA_fnc_addPerFrameHandler;
