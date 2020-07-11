@@ -65,7 +65,7 @@ private _fnc_flare = {
         [_group,_radius,_cycle,_area,_pos,_onlyPlayers] remoteExecCall [QFUNC(taskHunt), leader _group];
 
         // debug
-        if (EGVAR(danger,debug_functions)) then {format ["%1 taskHunt: %2 moved to remote client", side _group, groupID _group] call EFUNC(danger,debugLog);};
+        if (EGVAR(main,debug_functions)) then {format ["%1 taskHunt: %2 moved to remote client", side _group, groupID _group] call EFUNC(main,debugLog);};
     };
     if !(simulationEnabled (leader _group)) exitWith {false};
 

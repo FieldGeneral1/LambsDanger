@@ -205,7 +205,7 @@ _group allowFleeing 0;
         } foreach units _group;
 
         // debug
-        if (EGVAR(danger,debug_functions)) then {format ["%1 taskCQB: (team: %2) moved to remote client", side _group, groupID _group] call EFUNC(danger,debugLog);};
+        if (EGVAR(main,debug_functions)) then {format ["%1 taskCQB: (team: %2) moved to remote client", side _group, groupID _group] call EFUNC(main,debugLog);};
     };
 
     if !(simulationEnabled (leader _group)) exitWith {false};

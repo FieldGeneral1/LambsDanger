@@ -27,6 +27,6 @@ _group move _pos;
 // execute script
 [_group, _radius] call FUNC(taskHunt);
 
-waitUntil {sleep 1; ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1)};
+waitUntil {sleep 1; ((units _group) findIf {_x call EFUNC(main,isAlive)} == -1)};
 // end
 true

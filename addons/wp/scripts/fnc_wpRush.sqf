@@ -33,6 +33,6 @@ _group setVariable [QEGVAR(danger,disableGroupAI), true];
 // execute script
 [_group, _radius] call FUNC(taskRush);
 
-waitUntil {sleep 1; ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1)};
+waitUntil {sleep 1; ((units _group) findIf {_x call EFUNC(main,isAlive)} == -1)};
 // end
 true

@@ -44,13 +44,13 @@ if (_useWaypoint) then {
     _pos = [_group, (currentWaypoint _group) min ((count waypoints _group) - 1)];
 };
 
-if (EGVAR(danger,debug_functions)) then {
+if (EGVAR(main,debug_functions)) then {
     format ["%1 %2 created with group %3 on client: %4",
         side _group,
         ["taskAssault", "taskRetreat"] select _retreat,
         _group,
         clientOwner
-    ] call EFUNC(danger,debugLog);
+    ] call EFUNC(main,debugLog);
 };
 
 // sort group
@@ -176,7 +176,7 @@ if !(_group getVariable [QGVAR(taskAssault),false]) then {
             };
             _group setVariable [QGVAR(taskAssaultDestination), nil];
             _group setVariable [QGVAR(taskAssaultMembers), nil];
-            _group setVariable [QGVAR(taskAssault),nil]
+            _group setVariable [QGVAR(taskAssault),nil];
         };
 
         // adjust pos
@@ -197,7 +197,7 @@ if !(_group getVariable [QGVAR(taskAssault),false]) then {
             // clean up
             _group setVariable [QGVAR(taskAssaultDestination), nil];
             _group setVariable [QGVAR(taskAssaultMembers), nil];
-            _group setVariable [QGVAR(taskAssault),nil]
+            _group setVariable [QGVAR(taskAssault),nil];
             _group setBehaviour "AWARE";
         };
 

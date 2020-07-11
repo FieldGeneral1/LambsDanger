@@ -27,6 +27,6 @@ if (_radius isEqualTo 0) then { _radius = TASK_CQB_SIZE; };
 // low level move order
 _group move _pos;
 
-waitUntil {sleep 1; ((units _group) findIf {_x call EFUNC(danger,isAlive)} == -1)};
+waitUntil {sleep 1; ((units _group) findIf {_x call EFUNC(main,isAlive)} == -1)};
 // end
 true
